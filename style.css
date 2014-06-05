@@ -6,3 +6,7 @@ ul {
 .addForm {
 	margin:0px 10px 0px 10px;
 }
+
+.category.list-group {
+	margin-bottom:-2px;
+}

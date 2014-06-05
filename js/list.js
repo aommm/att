@@ -7,8 +7,8 @@ $(document).ready(function() {
 
   ////
   // -- Things --
-  // List: consists of many categories
-  // Category: consists of many items
+  // List: consists of many sublists
+  // SubList: consists of many items
   // Item: an item in the shopping list
 
   // An item in the shopping list
@@ -19,6 +19,11 @@ $(document).ready(function() {
     done: function() {
       // Send remove event to our category
       this.trigger('done', this.get('name'));
+    },
+    // For debugging
+    toString: function() {
+      var str = this.get('name');
+      return str;
     }
   });
 
@@ -26,72 +31,105 @@ $(document).ready(function() {
   Items = Backbone.Collection.extend({
     model: Item
   });
-  Category = Backbone.Model.extend({
-    initialize: function() {
-      this.items = new Items();
-      this.items.on('add remove', function() {this.trigger('change')}, this); // When underlying collection changes, trigger event
+  SubList = Backbone.Model.extend({
+    defaults: function() {
+      return {
+        name: '',
+        items: new Items()
+      };
     },
-    defaults: {
-      name: ''
+    initialize: function() {
+      // When underlying collection changes, SubList changes also
+      this.get('items').on('add remove', function() {this.trigger('change');}, this);
     },
     // Is this category empty?
     isEmpty: function() {
-      return this.items.isEmpty();
+      return this.get('items').isEmpty();
     },
     // Add a new item to this category
     addItem: function(item) {
+      console.log("adding ",item.toJSON(), "to category", this.get('name'));
       item.on('done', this.removeItem, this);
-      this.items.add(item);
+      this.get('items').add(item);
     },
     // Remove item(s) with specified name
     removeItem: function(name) {
-      console.log("remove item", name);
-
       // get item(s) with specified name
-      var item = this.items.filter(function(p) {
-        return p.get('name') == name;
+      var item = this.get('items').filter(function(item) {
+        return item.get('name') === name;
       });
       // Remove them
-      this.items.remove(item);
+      this.get('items').remove(item);
+    },
+    // For debugging
+    toString: function() {
+      var str = "-- "+this.get('name')+" --\n";
+      this.get('items').forEach(function(item) {
+        str += item.toString()+"\n";
+      });
+      return str;
     }
   });
 
-  // A list contains many categories
-  Categories = Backbone.Collection.extend({
-    collection: Category
+  // A list contains many subLists
+  SubLists = Backbone.Collection.extend({
+    collection: SubList
   });
   List = Backbone.Model.extend({
-    initialize: function() {
-      this.categories = new Categories();
+    defaults: function() {
+      return {
+        subLists: new SubLists(),
+        db: null
+      };
     },
-
-    // Add a new category to list
-    addCategory: function(category) {
-      var categories = this.categories.filter(function(c) {
-        return c.get('name') == category.get('name');
+    initialize: function() {
+      // When underlying collection changes, List changes also
+      this.get('subLists').on('change', function() {this.trigger('change');}, this);
+    },
+    // Is the entire list empty?
+    isEmpty: function() {
+      return this.get('subLists').all(function(sl) {
+        return sl.isEmpty();
       });
-      if (categories.length > 0) {
-        console.warn("Category "+category.get('name')+" already exists!");
+    },
+    // Add a new category to list
+    addSubList: function(subList) {
+      var subLists = this.get('subLists').filter(function(sl) {
+        return sl.get('name') === subList.get('name');
+      });
+      if (subLists.length > 0) {
+        console.warn("SubList "+subList.get('name')+" already exists!");
       } else {
-        this.categories.add(category);
+        this.get('subLists').add(subList);
       }
     },
     // Create new item, and add to list
     newItem: function(name, note, categoryName) {
-      // Find category
-      var categories = this.categories.filter(function(c) {
-        return c.get('name') == categoryName;
+      // TODO WIP
+      // Find sublist
+      // New category?
+      //   add to db, add sublist, etc
+      var subLists = this.get('subLists').filter(function(sl) {
+        return sl.get('name') == categoryName;
       });
-      if (categories.length == 0) {
-        console.warn("Category "+categoryName+" not found!");
-      } else if (categories.length > 1) {
-        console.warn("Category "+categoryName+" found multiple times!");
-      } 
+      if (subLists.length == 0) {
+        console.warn("SubList "+categoryName+" not found!");
+      } else if (subLists.length > 1) {
+        console.warn("SubList "+categoryName+" found multiple times!");
+      }
       else { // Create item, and add to category
-        var category = categories[0];
+        var category = subLists[0];
         var item = new Item({name: name, note: note});
         category.addItem(item);
       }
+    },
+    // For debugging
+    toString: function() {
+      var str = "";
+      this.get('subLists').forEach(function(subList) {
+        str += subList.toString();
+      });
+      return str;
     }
   })
 
@@ -100,27 +138,33 @@ $(document).ready(function() {
   ListView = Backbone.View.extend({
     tagName: 'div',
     template: Handlebars.compile($("#list-template").html()),
+    initialize: function() {
+      this.model.on('change', this.render, this);
+    },
     render: function() {
       // 1: Give basic template
       this.$el.html(this.template());
-      // 2:Add all categories to .list
-      var categories = this.model.categories;
+      // 2:Add all subLists to .list
+      var subLists = this.model.get('subLists');
       var list = this.$(".list");
-      categories.forEach(function(category) {
-        if (!category.isEmpty()) {
-          var catView = new CategoryView({model: category});
+      subLists.forEach(function(subList) {
+        if (!subList.isEmpty()) {
+          var catView = new SubListView({model: subList});
           list.append(catView.render().el);
         }
       }, this);
-      // 3: initialize js components
-      // TODO do not hard code
-      this.$("#category").typeahead({source: ["grönsaker", "mejeri"]});
+      // 3: initialize text field typeaheads
+      var products = this.model.get('db').getProductNames();
+      var categories = this.model.get('db').getCategoryNames();
+      this.$("#name").typeahead({source: products});
+      this.$("#category").typeahead({source: categories});
 
       return this;
     },
 
     events: {
-      'click #newItem': 'newItem'
+      'click #newItem': 'newItem',
+      'change #name': 'nameChanged'
     },
     // Add new item. Get name/note/category, and add to model
     newItem: function() {
@@ -130,21 +174,33 @@ $(document).ready(function() {
       var category = this.$el.find("#category").val();
       this.model.newItem(name, note, category);
       return false;
+    },
+    // When user has entered a product name, auto-complete category (if possible)
+    nameChanged: function() {
+      var productName = this.$("#name").val();
+      var categoryName = this.model.get('db').getCategory(productName);
+      if (categoryName) {
+        // Auto-complete category name
+        this.$("#category").val(categoryName);
+      } else {
+        // New category is about to be created, don't auto-complete anything
+        // TODO tell user she is creating new category
+      }
     }
   });
 
-  CategoryView = Backbone.View.extend({
+  SubListView = Backbone.View.extend({
     tagName: 'div',
     className: 'category list-group',
     template: Handlebars.compile($("#category-template").html()),
     initialize: function() {
-      this.model.on('change', this.render, this);
+      this.model.on('contentChanged', this.render, this);
     },
     render: function() {
       // 1: Give basic template
       this.$el.html(this.template());
       // 2: Loop through items collection (not the category itself)
-      var items = this.model.items;
+      var items = this.model.get('items');
       items.forEach(function(item) {
         var view = new ItemView({model: item});
         this.$el.append(view.render().el);

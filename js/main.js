@@ -1,25 +1,38 @@
 $(document).ready(function() {
 
 
-	// Instantiate model
+	// Instantiate db
 
-	var list = new List();
+  window.db = new Database();
+  db.addCategory('grönsaker');
+  db.addCategory('mejeri');
+  db.addCategory('kött');
+  db.addProduct('morötter', 'grönsaker');
+  db.addProduct('potatis', 'grönsaker');
+  db.addProduct('zucchinisar', 'grönsaker');
+  db.addProduct('mjölk', 'mejeri');
+  db.addProduct('ägg', 'mejeri');
+  db.addProduct('smör', 'mejeri');
 
-	var vegetableCategory = new Category({name: 'grönsaker'});
-  vegetableCategory.addItem(new Item({name: 'morötter'}));
-  vegetableCategory.addItem(new Item({name: 'potatis'}));
-  vegetableCategory.addItem(new Item({name: 'zucchinisar'}));
+  // Instantiate list
+	window.list = new List({db: db});
 
-  var dairyCategory = new Category({name: 'mejeri'});
-  dairyCategory.addItem(new Item({name: 'mjölk'}));
-  dairyCategory.addItem(new Item({name: 'ägg'}));
-  dairyCategory.addItem(new Item({name: 'smör'}));
+	window.vegetableSubList = new SubList({name: 'grönsaker'});
+  window.dairySubList = new SubList({name: 'mejeri'});
+  window.meatSubList = new SubList({name: 'kött'});
 
-  var meatCategory = new Category({name: 'Kött'});
+	list.addSubList(vegetableSubList);
+  list.addSubList(dairySubList);
+	list.addSubList(meatSubList);
 
-	list.addCategory(vegetableCategory);
-  list.addCategory(dairyCategory);
-	list.addCategory(meatCategory);
+  window.list.newItem('morötter', null, "grönsaker");
+
+  // vegetableSubList.addItem(new Item({name: 'potatis'}));
+  // vegetableSubList.addItem(new Item({name: 'zucchinisar'}));
+
+  // dairySubList.addItem(new Item({name: 'mjölk'}));
+  // dairySubList.addItem(new Item({name: 'ägg'}));
+  // dairySubList.addItem(new Item({name: 'smör'}));
 
 	// Instantiate view
 	var listView = new ListView({model: list});
