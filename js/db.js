@@ -36,7 +36,7 @@ $(document).ready(function() {
     },
 
     // Add a category to database
-    // (If not already exists)
+    // (If already exists, does nothing)
     addCategory: function(categoryName) {
       if (_(this.get('categories')).contains(categoryName)) {
         console.warn("Category already added!");
@@ -67,6 +67,10 @@ $(document).ready(function() {
       if (product) {
         return product.get('category');
       }
+    }
+    moveCategory: function(categoryName, newIndex) {
+      // TODO
+      console.warn("TODO implement!")
     }
   });
 

@@ -38,9 +38,12 @@ $(document).ready(function() {
         items: new Items()
       };
     },
-    initialize: function() {
+    initialize: function(options) {
       // When underlying collection changes, SubList changes also
       this.get('items').on('add remove', function() {this.trigger('change');}, this);
+      if (options.category) { // Save name if specified
+        this.set({'name', options.category});
+      }
     },
     // Is this category empty?
     isEmpty: function() {
@@ -105,17 +108,19 @@ $(document).ready(function() {
     },
     // Create new item, and add to list
     newItem: function(name, note, categoryName) {
-      // TODO WIP
-      // Find sublist
-      // New category?
-      //   add to db, add sublist, etc
+      // TOOO check if product exists
+      //      check if product has different category
+      //      check if category exists
+      //      implement special no-category category
       var subLists = this.get('subLists').filter(function(sl) {
-        return sl.get('name') == categoryName;
+        return sl.get('name') === categoryName;
       });
-      if (subLists.length == 0) {
-        console.warn("SubList "+categoryName+" not found!");
-      } else if (subLists.length > 1) {
+      if (subLists.length > 1) {
         console.warn("SubList "+categoryName+" found multiple times!");
+      }
+      if (subLists.length == 0) {
+        this.get('db').addCategory(categoryName);
+        this.addSubList(new SubList({category: categoryName}));
       }
       else { // Create item, and add to category
         var category = subLists[0];
