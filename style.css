@@ -24,3 +24,14 @@ ul {
 	/* Override bootstrap's relative positioning*/
 	position: static !important;
 }
+
+.messageArea .alert {
+	margin-bottom: -5px;
+	padding: 5px;
+}
+
+.messageArea .close {
+	margin-top: -20px;
+	margin-right: 10px;
+}
+

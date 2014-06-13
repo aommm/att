@@ -1,5 +1,12 @@
 $(document).ready(function() {
 
+  // TODO
+  // 1.
+  // Ask user what should happen when category already exists
+  // Use message system to do this
+  // 2. Check so that empty category works all right
+  // 3. Add 'administer categories' mode
+
   ////
   // Shopping list module
   // Shows a list of items, and allows them to be ticked off
@@ -96,12 +103,16 @@ $(document).ready(function() {
     defaults: function() {
       return {
         subLists: new SubLists(),
-        db: null
+        db: null,
+        message: '', // message to show on screen
+        messageStatus: 'warning' // or 'info' or 'question'
       };
     },
     initialize: function() {
       // When underlying collection changes, List changes also
       this.get('subLists').on('change', function() {this.trigger('change');}, this);
+      // Debug fun
+      this.showInfoMessage("Välkommen!");
     },
     // Is the entire list empty?
     isEmpty: function() {
@@ -237,6 +248,21 @@ $(document).ready(function() {
         str += subList.toString();
       });
       return str;
+    },
+    // Message functions
+    showInfoMessage: function(msg) {
+      this.set({messageStatus: 'info', message: msg});
+      var that = this;
+      window.setTimeout(function() {that.hideMessage();}, 2500); // Hide automatically
+    },
+    showWarningMessage: function(msg) {
+      this.set({messageStatus: 'warning', message: msg});
+    },
+    showQuestionMessage: function(msg) {
+      this.set({messageStatus: 'question', message: msg});
+    },
+    hideMessage: function() {
+      this.set({message: ''});
     }
   })
 
@@ -249,8 +275,9 @@ $(document).ready(function() {
       this.model.on('change', this.render, this);
     },
     render: function() {
+      console.log("renderin. Message: ",this.model.get('message'));
       // 1: Give basic template
-      this.$el.html(this.template());
+      this.$el.html(this.template(this.model.toJSON()));
       // 2:Add all subLists to .list
       var subLists = this.model.get('subLists');
       var list = this.$(".list");
@@ -271,6 +298,7 @@ $(document).ready(function() {
 
     events: {
       'click #newItem': 'newItem',
+      'click .close': 'hideMessage',
       'change #name': 'nameChanged'
     },
     // Add new item. Get name/note/category, and add to model
@@ -293,6 +321,10 @@ $(document).ready(function() {
         // New category is about to be created, don't auto-complete anything
         // TODO tell user she is creating new category
       }
+    },
+    // When message close button is clicked
+    hideMessage: function() {
+      this.model.hideMessage();
     }
   });
 
