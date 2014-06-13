@@ -41,28 +41,42 @@ $(document).ready(function() {
     initialize: function(options) {
       // When underlying collection changes, SubList changes also
       this.get('items').on('add remove', function() {this.trigger('change');}, this);
-      if (options.category) { // Save name if specified
-        this.set({'name', options.category});
-      }
     },
-    // Is this category empty?
+    // Is this subList empty?
     isEmpty: function() {
       return this.get('items').isEmpty();
     },
-    // Add a new item to this category
+    // Add a new item to this subList
     addItem: function(item) {
-      console.log("adding ",item.toJSON(), "to category", this.get('name'));
       item.on('done', this.removeItem, this);
       this.get('items').add(item);
     },
     // Remove item(s) with specified name
     removeItem: function(name) {
+      var item = this.getItem(name); // get item(s) with specified name,
+      if (item) {
+        this.get('items').remove(item); // And remove them
+      }
+      else {
+        console.warn("Cannot remove item!");
+      }
+    },
+    // Gets item with the specified name (if any)
+    // @returns object - if one found
+    // @returns null - if none found
+    // @returns list - if several found (shouldn't happen)
+    getItem: function(name) {
       // get item(s) with specified name
-      var item = this.get('items').filter(function(item) {
+      var result = this.get('items').filter(function(item) {
         return item.get('name') === name;
       });
-      // Remove them
-      this.get('items').remove(item);
+      if (result.length === 1) {
+        return result[0];
+      } else if (result.length === 0) {
+        return null;
+      } else {
+        return result;
+      }
     },
     // For debugging
     toString: function() {
@@ -95,37 +109,125 @@ $(document).ready(function() {
         return sl.isEmpty();
       });
     },
-    // Add a new category to list
-    addSubList: function(subList) {
-      var subLists = this.get('subLists').filter(function(sl) {
-        return sl.get('name') === subList.get('name');
+    // Get the sublist with the given name.
+    // @returns object - if one found
+    // @returns null - if none found
+    // @returns list - if several found (shouldn't happen)
+    getSubList: function(subListName) {
+      var result = this.get('subLists').filter(function(sl) {
+        return sl.get('name') === subListName;
       });
-      if (subLists.length > 0) {
-        console.warn("SubList "+subList.get('name')+" already exists!");
+      if (result.length === 1) {
+        return result[0];
+      } else if (result.length === 0) {
+        return null;
       } else {
+        return result;
+      }
+    },
+    // Create and add new subList
+    // (Note: does not create category)
+    newSubList: function(categoryName) {
+      // todo create
+      var existingSubList = this.getSubList(categoryName);
+      if (existingSubList) {
+        console.warn("SubList "+categoryName+" already exists!");
+      } else {
+        var subList = new SubList({name: categoryName});
         this.get('subLists').add(subList);
       }
     },
+    // Checks if the given product has been added to the list
+    productExists: function(product) {
+      var category = product.get('category');
+      var subList = this.getSubList(category);
+      if (subList) {
+        return !!subList.getItem(product.get('name'));
+      }
+    },
+    // Adds an item to the correct sublist
+    // Creates sublist if necessary
+    addItem: function(item, subListName) {
+      var db = this.get('db');
+      var subList = this.getSubList(subListName);
+      if (subList instanceof Array) {
+        console.warn("SubList "+subListName+" found multiple times!");
+      }
+      else if (!subList) {
+        console.log("Create sublist", subList);
+        console.log(this.get('subLists').toJSON());
+        db.addCategory(subListName);
+        this.newSubList(subListName);
+        this.get('subLists').first().addItem(item);
+      }
+      else {
+        subList.addItem(item);
+      }
+    },
     // Create new item, and add to list
-    newItem: function(name, note, categoryName) {
+    newItem: function(productName, note, categoryName) {
       // TOOO check if product exists
       //      check if product has different category
       //      check if category exists
       //      implement special no-category category
-      var subLists = this.get('subLists').filter(function(sl) {
-        return sl.get('name') === categoryName;
-      });
-      if (subLists.length > 1) {
-        console.warn("SubList "+categoryName+" found multiple times!");
+      var db      = this.get('db')
+        , product = db.getProduct(productName);
+
+      // "Sanitize" input (TODO do better)
+      categoryName = categoryName.trim();
+      productName = productName? productName.trim() : productName;
+      note = note ? note.trim() : note;
+
+      // Product exists
+      if (product) {
+        console.log("Product exists");
+
+        // Product has changed category. Change db
+        if (product.get('category') !== categoryName) {
+          console.log("Product has changed category");
+          console.warn("New category "+categoryName+" specified for product "+product.get('name')+"!");
+          // TODO ask user if hen wants to change category for this product
+          // Create category if necessary
+          // if (!db.categoryExists(categoryName)) {
+          //   db.addCategory(categoryName);
+          //   this.newSubList(categoryName);
+          // }
+        }
+        // Product has ok category. Don't change db
+        else {
+          // Product has no category
+          if (categoryName === '') {
+            console.warn("No category specified for product "+product.get('name')+"!");
+            // TODO add to empty category and sublist.
+          }
+          // Product has the right category. 
+          else {
+            console.log("Product has the right category");
+            if (this.productExists(product)) {
+              console.warn("Product has already been added to list!");
+            }
+            else {
+              var item = new Item({name: productName, note: note});
+              this.addItem(item, categoryName);
+            }
+            
+          }
+
+        }
       }
-      if (subLists.length == 0) {
-        this.get('db').addCategory(categoryName);
-        this.addSubList(new SubList({category: categoryName}));
-      }
-      else { // Create item, and add to category
-        var category = subLists[0];
-        var item = new Item({name: name, note: note});
-        category.addItem(item);
+      // Product does not exist
+      else {
+        console.log("Product doesn't exist");
+        if (!db.categoryExists(categoryName)) {
+          console.log("Category doesn't exist");
+          db.addCategory(categoryName);
+          this.newSubList(categoryName);
+        }
+        // Add to db
+        db.addProduct(productName, categoryName);
+        // Add to list
+        var item = new Item({name: productName, note: note});
+        this.addItem(item, categoryName);
       }
     },
     // For debugging
@@ -197,18 +299,18 @@ $(document).ready(function() {
   SubListView = Backbone.View.extend({
     tagName: 'div',
     className: 'category list-group',
-    template: Handlebars.compile($("#category-template").html()),
+    template: Handlebars.compile($("#subList-template").html()),
     initialize: function() {
       this.model.on('contentChanged', this.render, this);
     },
     render: function() {
       // 1: Give basic template
-      this.$el.html(this.template());
+      this.$el.html(this.template(this.model.toJSON()));
       // 2: Loop through items collection (not the category itself)
       var items = this.model.get('items');
       items.forEach(function(item) {
         var view = new ItemView({model: item});
-        this.$el.append(view.render().el);
+        this.$(".items").append(view.render().el);
       }, this);
       return this;
     }

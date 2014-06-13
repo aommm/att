@@ -38,10 +38,9 @@ $(document).ready(function() {
     // Add a category to database
     // (If already exists, does nothing)
     addCategory: function(categoryName) {
-      if (_(this.get('categories')).contains(categoryName)) {
+      if (this.categoryExists(categoryName)) {
         console.warn("Category already added!");
-      }
-      else {
+      } else {
         this.get('categories').push(categoryName);
       }
     },
@@ -53,7 +52,7 @@ $(document).ready(function() {
       if (product) {
         console.warn("Product already added!");
       }
-      else if (!_(this.get('categories')).contains(categoryName)) {
+      else if (!this.categoryExists(categoryName)) {
         console.warn("Category doesn't exist!");
       }  
       else {
@@ -67,7 +66,16 @@ $(document).ready(function() {
       if (product) {
         return product.get('category');
       }
-    }
+    },
+    // Get the product with the specified name (if any)
+    getProduct: function(productName) {
+      return this.get('products').get(productName);
+    },
+
+    // Checks if category exists
+    categoryExists: function(categoryName) {
+      return _(this.get('categories')).contains(categoryName);
+    },
     moveCategory: function(categoryName, newIndex) {
       // TODO
       console.warn("TODO implement!")

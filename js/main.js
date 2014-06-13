@@ -17,13 +17,9 @@ $(document).ready(function() {
   // Instantiate list
 	window.list = new List({db: db});
 
-	window.vegetableSubList = new SubList({name: 'grönsaker'});
-  window.dairySubList = new SubList({name: 'mejeri'});
-  window.meatSubList = new SubList({name: 'kött'});
-
-	list.addSubList(vegetableSubList);
-  list.addSubList(dairySubList);
-	list.addSubList(meatSubList);
+	list.newSubList('grönsaker');
+  list.newSubList('mejeri');
+	list.newSubList('kött');
 
   window.list.newItem('morötter', null, "grönsaker");
 
