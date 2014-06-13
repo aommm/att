@@ -25,13 +25,19 @@ ul {
 	position: static !important;
 }
 
+/* The message area in "add item" form */
+
 .messageArea .alert {
 	margin-bottom: -5px;
 	padding: 5px;
 }
-
 .messageArea .close {
 	margin-top: -20px;
 	margin-right: 10px;
 }
-
+.messageArea .buttons { /* question buttons */
+	text-align:right;
+}
+.messageArea .message { /* question message */
+	overflow: hidden;
+}

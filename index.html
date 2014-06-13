@@ -46,8 +46,20 @@
           </div>
           {{#if message}}
             <div class="messageArea form-group">
-              <div class="alert alert-{{messageStatus}}">{{message}}</div>
-              <button type="button" class="close" aria-hidden="true">&times;</button>
+              {{#equal messageStatus "question"}}
+                <div class="alert alert-warning">
+                  <div class="message">
+                    {{message}}
+                  </div>
+                  <div class="buttons">
+                    <button id="resetCategory"  class="btn btn-default btn-sm">{{button1}}</button>
+                    <button id="changeCategory" class="btn btn-primary btn-sm">{{button2}}</button>
+                  </div>
+                </div>
+              {{else}}
+                <div class="alert alert-{{#equal messageStatus 'warning'}}danger{{else}}{{#equal messageStatus 'info'}}info{{/equal}}{{/equal}}">{{message}}</div>
+                <button type="button" class="close" aria-hidden="true">&times;</button>
+              {{/equal}}
             </div>
           {{/if}}
           <div class="form-group">
@@ -60,7 +72,6 @@
   </script>
 
   <script id="subList-template" type="text/x-handlebars-template">
-    {{!Empty at the moment}}
     <span class="name">{{name}}</span>
     <div class="items"></div>
   </script>

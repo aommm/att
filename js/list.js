@@ -111,8 +111,6 @@ $(document).ready(function() {
     initialize: function() {
       // When underlying collection changes, List changes also
       this.get('subLists').on('change', function() {this.trigger('change');}, this);
-      // Debug fun
-      this.showInfoMessage("Välkommen!");
     },
     // Is the entire list empty?
     isEmpty: function() {
@@ -197,12 +195,8 @@ $(document).ready(function() {
         if (product.get('category') !== categoryName) {
           console.log("Product has changed category");
           console.warn("New category "+categoryName+" specified for product "+product.get('name')+"!");
-          // TODO ask user if hen wants to change category for this product
-          // Create category if necessary
-          // if (!db.categoryExists(categoryName)) {
-          //   db.addCategory(categoryName);
-          //   this.newSubList(categoryName);
-          // }
+          // Ask user what she wants to do (next in flow: changeCategory or resetCategory)
+          this.showQuestionMessage("You have changed the category of the product "+product.get('name')+". Do you want to use this new category, or reset to the old one?", "Reset", "Change")
         }
         // Product has ok category. Don't change db
         else {
@@ -257,12 +251,29 @@ $(document).ready(function() {
     },
     showWarningMessage: function(msg) {
       this.set({messageStatus: 'warning', message: msg});
-    },
-    showQuestionMessage: function(msg) {
-      this.set({messageStatus: 'question', message: msg});
+      this.set({messageStatus: 'question', message: msg, button1: button1, button2: button2});
     },
     hideMessage: function() {
       this.set({message: ''});
+    },
+    changeCategory: function() {
+      console.log("Change category");
+      // TODO
+      // Change product category in database
+      // Create new category/sublist?
+      // Add new item to sublist
+      
+      // Create category if necessary
+      // if (!db.categoryExists(categoryName)) {
+      //   db.addCategory(categoryName);
+      //   this.newSubList(categoryName);
+      // }
+
+    },
+    resetCategory: function() {
+      console.log("Reset category");
+      // TODO reset category in form to values from db
+      // Add new item to sublist
     }
   })
 
@@ -298,8 +309,10 @@ $(document).ready(function() {
 
     events: {
       'click #newItem': 'newItem',
+      'change #name': 'nameChanged',
       'click .close': 'hideMessage',
-      'change #name': 'nameChanged'
+      'click .changeCategory': 'changeCategory',
+      'click .resetCategory': 'resetCategory'
     },
     // Add new item. Get name/note/category, and add to model
     newItem: function() {
@@ -325,6 +338,14 @@ $(document).ready(function() {
     // When message close button is clicked
     hideMessage: function() {
       this.model.hideMessage();
+    },
+    // In question dialog, when "change category" is chosen
+    changeCategory: function() {
+      this.model.changeCategory();
+    },
+    // In question dialog, when "reset category" is chosen
+    resetCategory: function() {
+      this.model.resetCategory();
     }
   });
 
