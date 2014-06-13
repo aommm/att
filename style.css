@@ -10,3 +10,17 @@ ul {
 .category.list-group {
 	margin-bottom:-2px;
 }
+
+.category .name {
+	float: right;
+	margin-top: 5px;
+	margin-right: 5px;
+	z-index: 999;
+	letter-spacing: 0.2em;
+	font-size: 1.2em;
+}
+
+.list-group-item {
+	/* Override bootstrap's relative positioning*/
+	position: static !important;
+}
