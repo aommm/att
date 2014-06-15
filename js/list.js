@@ -10,6 +10,8 @@ $(document).ready(function() {
   // *. Fix mobile
   // *. "Disappearing in 3..2..1.." for alerts
   // *. Rename product (hard? check for conflicts etc)
+  // *. Message: do not use attributes, but trigger custom events instead
+  //            (since changing attributes forces re-rendering, and model shouldn't have to remember text field values)
 
   // 1.
   // Ask user what should happen when category already exists
@@ -242,7 +244,6 @@ $(document).ready(function() {
                       note:        note,
                       oldCategory: product.get('category'),
                       newCategory: categoryName
-                      
                     }
           this.set({changeCategory: data}, {silent: true});
         }
