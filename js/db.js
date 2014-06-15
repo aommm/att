@@ -59,6 +59,22 @@ $(document).ready(function() {
         this.get('products').add({name: productName, category: categoryName});
       }
     },
+    // Change the category of a product
+    // (If product doesn't exist, does nothing)
+    changeProduct: function(productName, categoryName) {
+      var product = this.get('products').get(productName);
+      if (product) {
+        if (this.categoryExists(categoryName)) {
+          console.log("Changed category of "+productName+" to "+categoryName);
+          product.set({category: categoryName});
+        } else {
+          console.warn("Category doesn't exist!");
+        }        
+      } else {
+        console.warn("Product doesn't exist")
+      }
+    },
+
     // Get category of specified product
     // TODO needed?
     getCategory: function(productName) {
