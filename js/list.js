@@ -372,13 +372,29 @@ $(document).ready(function() {
           list.append(catView.render().el);
         }
       }, this);
+      
       // 3: Add MessageView to DOM
       this.$("#message").html(this.messageView.el);
-      // 4: initialize text field typeaheads
+
+      // 4: Get typeahead data
       var products = this.model.get('db').getProductNames();
       var categories = this.model.get('db').getCategoryNames();
-      this.$("#name").typeahead({source: products});
-      this.$("#category").typeahead({source: categories});
+      var productAdapter = Utils.createTypeaheadAdapter(products); // (Creates bloodhound etc)
+      var categoryAdapter = Utils.createTypeaheadAdapter(categories);
+
+      // 5: initialize typeaheads
+      this.$("#name").typeahead({}, {
+        displayKey: 'value',
+        source: productAdapter
+      });
+      this.$("#category").typeahead({}, {
+        displayKey: 'value',
+        source: categoryAdapter
+      });
+
+      // Listen to events etc
+      Utils.applyFormListeners(this.$("#name"), this.$("#note"));
+      Utils.applyFormListeners(this.$("#category"), this.$("#newItem"));
 
       return this;
     },

@@ -41,3 +41,8 @@ ul {
 .messageArea .message { /* question message */
 	overflow: hidden;
 }
+
+/* Override ugly twitter typeahead text boxes */
+.tt-input {
+	border: 1px #ABADB3 solid;
+}
