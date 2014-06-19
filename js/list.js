@@ -290,22 +290,22 @@ $(document).ready(function() {
       });
       return str;
     },
-    // Message functions
+    // Message functions (simply sends events to view)
     showInfoMessage: function(msg, delay) {
-      this.set({messageStatus: 'info', message: msg});
+      this.trigger('showInfoMessage', msg);
       var that = this;
       window.setTimeout(function() {that.hideMessage();}, delay); // Hide automatically
     },
     showWarningMessage: function(msg) {
-      this.set({messageStatus: 'warning', message: msg});
+      this.trigger('showWarningMessage', msg);
     },
-    // Shows a question, with two available answers
-    showQuestion: function(msg, button1Text, button2Text) {
-      this.set({messageStatus: 'question', message: msg, button1: button1Text, button2: button2Text});
+    showQuestion: function(msg, button1Text, button2Text) { // Shows a question, with two available answers
+      this.trigger('showQuestion', msg, button1Text, button2Text);
     },
     hideMessage: function() {
-      this.set({message: ''});
+      this.trigger('hideMessage');
     },
+
     // Changes the category of a product.
     // Updates database and list, and creates new things if necessary.
     //
@@ -353,9 +353,14 @@ $(document).ready(function() {
     initialize: function() {
       this.model.on('change', this.render, this);
       this.model.on('updateFormCategory', this.updateFormCategory, this);
+      // Create Message dialog view (model can control it using events)
+      this.messageView = new MessageView({model: this.model});
+      this.model.on('hideMessage', function() {this.messageView.hide();}, this);
+      this.model.on('showInfoMessage', function(msg) {this.messageView.showInfo(msg);}, this);
+      this.model.on('showWarningMessage', function(msg) {this.messageView.showWarning(msg);}, this);
+      this.model.on('showQuestion', function(msg, btn1t, btn2t) {this.messageView.showQuestion(msg, btn1t, btn2t);}, this);
     },
     render: function() {
-      console.log("renderin. Message: ",this.model.get('message'));
       // 1: Give basic template
       this.$el.html(this.template(this.model.toJSON()));
       // 2:Add all subLists to .list
@@ -367,7 +372,9 @@ $(document).ready(function() {
           list.append(catView.render().el);
         }
       }, this);
-      // 3: initialize text field typeaheads
+      // 3: Add MessageView to DOM
+      this.$("#message").html(this.messageView.el);
+      // 4: initialize text field typeaheads
       var products = this.model.get('db').getProductNames();
       var categories = this.model.get('db').getCategoryNames();
       this.$("#name").typeahead({source: products});
@@ -375,13 +382,9 @@ $(document).ready(function() {
 
       return this;
     },
-
     events: {
       'click #newItem': 'newItem',
       'change #name': 'nameChanged',
-      'click .close': 'hideMessage',
-      'click #changeCategory': 'changeCategory',
-      'click #resetCategory': 'resetCategory'
     },
     // Add new item. Get name/note/category, and add to model
     newItem: function() {
@@ -402,20 +405,6 @@ $(document).ready(function() {
         this.$("#category").val(categoryName);
       }
     },
-    // When message close button is clicked
-    hideMessage: function() {
-      this.model.hideMessage();
-    },
-    // In question dialog, when "change category" is chosen
-    changeCategory: function() {
-      this.model.changeCategory();
-      return false;
-    },
-    // In question dialog, when "reset category" is chosen
-    resetCategory: function() {
-      this.model.resetCategory();
-      return false;
-    },
     // Updates the form with a new category
     updateFormCategory: function(categoryName) {
       console.log("updating form cat",categoryName);
@@ -423,6 +412,47 @@ $(document).ready(function() {
       this.$("#category").focus();
     }
   });
+
+  // Message dialog, possibly with two buttons
+  // Change its state by calling: hide, showInfo, showQuestion
+  // Reports directly to List model when buttons are clicked
+  MessageView = Backbone.View.extend({
+    tagName: 'div',
+    className: 'messageArea form-group',
+    template: Handlebars.compile($("#message-template").html()),
+    render: function(settings) {
+      this.$el.html(this.template(settings));
+      this.delegateEvents(); // (This is normally run from constructor,but MessageView is never re-created)
+    },
+    events: {
+      'click .close': 'hideMessage',
+      'click #changeCategory': 'changeCategory',
+      'click #resetCategory': 'resetCategory'
+    },
+    // Methods for hiding/displatying/etc the message
+    hide: function() {
+      this.render({show: false});
+    },
+    showInfo: function(msg) {
+      this.render({show: true, messageStatus: "info", message: msg});
+    },
+    showWarning: function(msg) {
+      this.render({show: true, messageStatus: "warning", message: msg});
+    },
+    showQuestion: function(msg, btn1Text, btn2Text) {
+      this.render({show: true, messageStatus: "question", message: msg, button1: btn1Text, button2: btn2Text});
+    },
+    // Callback fns, do not call directly
+    changeCategory: function() {
+      this.model.changeCategory();
+      return false;
+    },
+    resetCategory: function() {
+      this.model.resetCategory();
+      return false;
+    }
+  });
+
 
   SubListView = Backbone.View.extend({
     tagName: 'div',
