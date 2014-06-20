@@ -1,24 +1,22 @@
 $(document).ready(function() {
 
   // TODO
-  // *. Add item: if already eit, update note
-  // *. If category has changed, and was blank previously,
-  //    Do not prompt!
+  // *. Fix mobile
+
   // *. Rename category
   // *. Remove category - set all related product's categories to ''
-  // *. Remove product (if spelling mistake) - show red cross in autocomplete dropdown
-  // *. Fix mobile
-  // *. "Disappearing in 3..2..1.." for alerts
+  // *. Remove product (useful if spelling mistake) - show red cross in autocomplete dropdown
   // *. Rename product (hard? check for conflicts etc)
-  // *. Message: do not use attributes, but trigger custom events instead
-  //            (since changing attributes forces re-rendering, and model shouldn't have to remember text field values)
+  // *. "Disappearing in 3..2..1.." for alerts
 
-  // 1.
-  // Ask user what should happen when category already exists
-  // Use message system to do this
-  // 2. Check so that empty category works all right
+  // *. Check so that empty category works all right
+  //   *. Add special display for it, at the very least
+  //   *. If category has changed, and was blank previously, Do not prompt!
+ 
   // 3. Add 'administer categories' mode
-  //    Allo different profile - no I ant to hop at ICA1
+
+  // How-to-store-data:
+  //    Allow different profile - now I want to shop at ICA1
   //    A store contains product db as well as category info
   //    New store: Get product info from all stores - where category
   //               field differs, just leave it blank!
