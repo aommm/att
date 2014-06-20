@@ -418,13 +418,14 @@ $(document).ready(function() {
       // If db has entry for this product,
       if (categoryName) {
         // Auto-complete category name
-        this.$("#category").val(categoryName);
+        this.$("#category").typeahead('val', categoryName);
+
       }
     },
     // Updates the form with a new category
     updateFormCategory: function(categoryName) {
       console.log("updating form cat",categoryName);
-      this.$("#category").val(categoryName);
+      this.$("#category").typeahead('val', categoryName);
       this.$("#category").focus();
     }
   });
