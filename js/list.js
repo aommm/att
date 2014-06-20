@@ -204,6 +204,8 @@ $(document).ready(function() {
         // Get sublist, and update item
         var subList = this.getSubList(oldCategory);
         subList.updateItem(name, note);
+        this.showInfoMessage(name+' updated!', 3500);
+        this.resetView(); // Empty text fields
       }
       // Advanced: update item category. Remove from one sublist, add to another
       else {
@@ -282,28 +284,10 @@ $(document).ready(function() {
         this.addItem(item, categoryName);
       }
     },
-    // For debugging
-    toString: function() {
-      var str = "";
-      this.get('subLists').forEach(function(subList) {
-        str += subList.toString();
-      });
-      return str;
-    },
-    // Message functions (simply sends events to view)
-    showInfoMessage: function(msg, delay) {
-      this.trigger('showInfoMessage', msg);
-      var that = this;
-      window.setTimeout(function() {that.hideMessage();}, delay); // Hide automatically
-    },
-    showWarningMessage: function(msg) {
-      this.trigger('showWarningMessage', msg);
-    },
-    showQuestion: function(msg, button1Text, button2Text) { // Shows a question, with two available answers
-      this.trigger('showQuestion', msg, button1Text, button2Text);
-    },
-    hideMessage: function() {
-      this.trigger('hideMessage');
+
+    // Empty text fields, and move focus to first text field
+    resetView: function() {
+      this.trigger('resetView');
     },
 
     // Changes the category of a product.
@@ -340,9 +324,33 @@ $(document).ready(function() {
       var data = this.get('changeCategory');
       this.hideMessage();
       // Tell view to update
-      this.trigger('updateFormCategory', data.oldCategory);
-      
-    }
+      this.trigger('updateFormCategory', data.oldCategory); 
+    },
+
+    // Message functions (simply sends events to view)
+    showInfoMessage: function(msg, delay) {
+      this.trigger('showInfoMessage', msg);
+      var that = this;
+      window.setTimeout(function() {that.hideMessage();}, delay); // Hide automatically
+    },
+    showWarningMessage: function(msg) {
+      this.trigger('showWarningMessage', msg);
+    },
+    showQuestion: function(msg, button1Text, button2Text) { // Shows a question, with two available answers
+      this.trigger('showQuestion', msg, button1Text, button2Text);
+    },
+    hideMessage: function() {
+      this.trigger('hideMessage');
+    },
+
+    // For debugging
+    toString: function() {
+      var str = "";
+      this.get('subLists').forEach(function(subList) {
+        str += subList.toString();
+      });
+      return str;
+    },
   })
 
   // Define view for shopping list
@@ -353,6 +361,7 @@ $(document).ready(function() {
     initialize: function() {
       this.model.on('change', this.render, this);
       this.model.on('updateFormCategory', this.updateFormCategory, this);
+      this.model.on('resetView', this.resetView, this);
       // Create Message dialog view (model can control it using events)
       this.messageView = new MessageView({model: this.model});
       this.model.on('hideMessage', function() {this.messageView.hide();}, this);
@@ -427,6 +436,13 @@ $(document).ready(function() {
       console.log("updating form cat",categoryName);
       this.$("#category").typeahead('val', categoryName);
       this.$("#category").focus();
+    },
+    // Empty all text fields, and move focus to top
+    resetView: function() {
+      this.$("#name").typeahead('val', '');
+      this.$("#note").val('');
+      this.$("#category").typeahead('val', '');
+      this.$("#name").focus();
     }
   });
 
