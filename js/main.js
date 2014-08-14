@@ -14,24 +14,24 @@ Handlebars.registerHelper('equal', function(lvalue, rvalue, options) {
 	// Instantiate db
 
   window.db = new Database();
-  db.addCategory('grönsaker');
-  db.addCategory('mejeri');
-  db.addCategory('kött');
-  db.addProduct('morötter', 'grönsaker');
-  db.addProduct('potatis', 'grönsaker');
-  db.addProduct('zucchinisar', 'grönsaker');
-  db.addProduct('mjölk', 'mejeri');
-  db.addProduct('ägg', 'mejeri');
-  db.addProduct('smör', 'mejeri');
+  // db.addCategory('grönsaker');
+  // db.addCategory('mejeri');
+  // db.addCategory('kött');
+  // db.addProduct('morötter', 'grönsaker');
+  // db.addProduct('potatis', 'grönsaker');
+  // db.addProduct('zucchinisar', 'grönsaker');
+  // db.addProduct('mjölk', 'mejeri');
+  // db.addProduct('ägg', 'mejeri');
+  // db.addProduct('smör', 'mejeri');
 
   // Instantiate list
 	window.list = new List({db: db});
+  list.fetch();
 
-	list.newSubList('grönsaker');
-  list.newSubList('mejeri');
-	list.newSubList('kött');
-
-  window.list.newItem('morötter', null, "grönsaker");
+	// list.newSubList('grönsaker');
+ //  list.newSubList('mejeri');
+	// list.newSubList('kött');
+  // window.list.newItem('morötter', null, "grönsaker");
 
   // vegetableSubList.addItem(new Item({name: 'potatis'}));
   // vegetableSubList.addItem(new Item({name: 'zucchinisar'}));

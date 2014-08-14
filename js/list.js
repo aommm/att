@@ -1,7 +1,10 @@
 $(document).ready(function() {
 
   // TODO
-  // *. Fix mobile
+  // *. Test mobile
+  // *. Fix sync
+  // *. Stop refreshing
+  // *. Sync note updates
 
   // *. Rename category
   // *. Remove category - set all related product's categories to ''
@@ -121,6 +124,9 @@ $(document).ready(function() {
     collection: SubList
   });
   List = Backbone.Model.extend({
+    // Save database using Backbone.localStorage
+    localStorage: new Backbone.LocalStorage("attList"),
+    // Default values for new lists
     defaults: function() {
       return {
         subLists: new SubLists(),
@@ -129,9 +135,38 @@ $(document).ready(function() {
         messageStatus: 'warning' // or 'info' or 'question'
       };
     },
+    parse: function(response) {
+      response = response[0];
+      console.log("parsing. response to parse:",response);
+      
+      // Create new db, give content
+      var newDb = new Database();
+      newDb.set(newDb.parse(response.db));
+      response.db = newDb;
+      // Create new SubLists, give content
+      var newSubLists = new SubLists();
+      response.subLists.forEach(function(sl) {
+        var newItems = new Items(sl.items);
+        var newSubList = new SubList({name: sl.name, items: newItems});
+        newSubLists.add(newSubList);
+      }, this);
+      response.subLists = newSubLists;
+
+      // Listen to SubLists
+      response.subLists.on('change', function() {
+        console.log("something changed. save!");
+        // TODO do also for db?
+        // this.trigger('change');
+        // TODO send something here perhaps?
+        var a = this.save();
+        alert(a);
+        
+      }, this);
+      
+      return response;
+    },
     initialize: function() {
-      // When underlying collection changes, List changes also
-      this.get('subLists').on('change', function() {this.trigger('change');}, this);
+      // nothing
     },
     // Is the entire list empty?
     isEmpty: function() {

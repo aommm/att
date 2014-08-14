@@ -11,7 +11,7 @@ $(document).ready(function() {
     },
     initialize: function() {
       this.set({'id': this.get('name')});
-      console.log("id: ", this.id);
+      console.log("new product: ", this.id, this.category);
     }
   });
 
@@ -20,11 +20,18 @@ $(document).ready(function() {
   });
 
   Database = Backbone.Model.extend({
+    // Save database using Backbone.localStorage
+    // localStorage: new Backbone.LocalStorage("attDb"),
     defaults: function() {
       return {
         products: new Products(),
         categories: []
       };
+    },
+    // Convert JSON object to proper backbone model
+    parse: function(response) {
+      response.products = new Products(response.products);
+      return response;
     },
     // Returns all product names
     getProductNames: function() {
