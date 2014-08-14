@@ -407,7 +407,7 @@ $(document).ready(function() {
     },
     events: {
       'click #newItem': 'newItem',
-      'change #name': 'nameChanged',
+      'change #name': 'nameChanged'
     },
     // Add new item. Get name/note/category, and add to model
     newItem: function() {

@@ -23,14 +23,11 @@ Utils = {
   // @param nextEl - the next element in the user's flow
   applyFormListeners: function(thisEl, nextEl) {
 
-    // When an element is selected in the dropdown, auto-complete category
-    thisEl.on('typeahead:selected', function() {
+    // When an element is selected in the dropdown,
+    // or when text field is autocompleted (user presses tab),
+    thisEl.on('typeahead:selected typeahead:autocompleted', function() {
+      // auto-complete category & move to next element
       $(this).trigger('change');
-    });
-
-    // When text field is autocompleted (user presses tab),
-    // move to next element
-    thisEl.on('typeahead:autocompleted', function() {
       nextEl.focus();
     });
 
