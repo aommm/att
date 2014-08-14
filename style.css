@@ -44,5 +44,6 @@ ul {
 
 /* Override ugly twitter typeahead text boxes */
 .tt-input {
-	border: 1px #ABADB3 solid;
+	/* Not needed anymore? */
+	/*border: 1px #ABADB3 solid;*/
 }
