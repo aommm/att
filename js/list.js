@@ -139,30 +139,39 @@ $(document).ready(function() {
       response = response[0];
       console.log("parsing. response to parse:",response);
       
-      // Create new db, give content
+      // Create new db and sublists
       var newDb = new Database();
-      newDb.set(newDb.parse(response.db));
-      response.db = newDb;
-      // Create new SubLists, give content
       var newSubLists = new SubLists();
-      response.subLists.forEach(function(sl) {
-        var newItems = new Items(sl.items);
-        var newSubList = new SubList({name: sl.name, items: newItems});
-        newSubLists.add(newSubList);
-      }, this);
-      response.subLists = newSubLists;
+
+      // Parse db and sublists from localStorage (if any)
+      if (response) { 
+        if (response.db) { // part 1 - product database
+          newDb.set(newDb.parse(response.db));
+        }
+        if (response.subLists) { // part 2 - current list
+          response.subLists.forEach(function(sl) { 
+            var newItems = new Items(sl.items);
+            var newSubList = new SubList({name: sl.name, items: newItems});
+            newSubLists.add(newSubList);
+          }, this);
+        }
+      } else {
+        response = {};
+      }
 
       // Listen to SubLists
-      response.subLists.on('change', function() {
+      newSubLists.on('change', function() {
         console.log("something changed. save!");
         // TODO do also for db?
         // this.trigger('change');
         // TODO send something here perhaps?
         var a = this.save();
         alert(a);
-        
       }, this);
       
+      // Send new data back
+      response.db = newDb;
+      response.subLists = newSubLists;
       return response;
     },
     initialize: function() {
