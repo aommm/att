@@ -61,7 +61,8 @@ $(document).ready(function() {
     },
     initialize: function(options) {
       // When underlying collection changes, SubList changes also
-      this.get('items').on('add remove', function() {this.trigger('change');}, this);
+      // Note: 'change' event is internal to backbone, and nowadays it expects oldValue (?) as an argument
+      this.get('items').on('add remove', function() {this.trigger('change', this); }, this);
     },
     // Is this subList empty?
     isEmpty: function() {
@@ -131,7 +132,7 @@ $(document).ready(function() {
     },
     initialize: function() {
       // When underlying collection changes, List changes also
-      this.get('subLists').on('change', function() {this.trigger('change');}, this);
+      this.get('subLists').on('change', function() {this.trigger('change', this);}, this);
     },
     // Is the entire list empty?
     isEmpty: function() {

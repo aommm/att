@@ -31,6 +31,7 @@ Handlebars.registerHelper('equal', function(lvalue, rvalue, options) {
   list.newSubList('mejeri');
 	list.newSubList('kött');
 
+  // Example data
   window.list.newItem('morötter', null, "grönsaker");
 
   // vegetableSubList.addItem(new Item({name: 'potatis'}));
